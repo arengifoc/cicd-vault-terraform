@@ -41,7 +41,7 @@ output "key_pair_name" {
 
 output "deployment_instructions" {
   description = "Instructions for accessing the website after deployment"
-  value = <<-EOT
+  value       = <<-EOT
     🚀 Deployment Complete! 
     
     📝 Next Steps:
