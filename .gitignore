@@ -3,7 +3,6 @@ terraform.tfstate
 terraform.tfstate.backup
 .terraform.lock.hcl
 crash.log
-*.tfvars
 *.tfplan
 override.tf
 override.tf.json

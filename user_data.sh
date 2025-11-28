@@ -16,7 +16,7 @@ cat <<'HTML' > index.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo HCP Terraform</title>
+    <title>Demo Vault, Terraform y GitHub Actions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -80,7 +80,7 @@ cat <<'HTML' > index.html
         
         <div class="info">
             <h3>✅ Despliegue Exitoso</h3>
-            <p>Esta página web ha sido desplegada automáticamente usando HashiCorp Terraform y HCP Terraform.</p>
+            <p>Esta página web ha sido desplegada automáticamente usando HashiCorp Terraform y GitHub Actions.</p>
         </div>
 
         <div class="features">
@@ -117,7 +117,7 @@ cat <<'HTML' > about.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acerca de - Demo HCP Terraform</title>
+    <title>Acerca de - Demo Vault, Terraform y GitHub Actions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -169,7 +169,7 @@ cat <<'HTML' > about.html
             <h3>🛠️ Tecnologías utilizadas:</h3>
             <ul>
                 <li><strong>HashiCorp Terraform</strong> - Infraestructura como código</li>
-                <li><strong>HCP Terraform</strong> - Gestión de estado remoto</li>
+                <li><strong>HashiCorp Vault</strong> - Gestion de secretos</li>
                 <li><strong>Amazon EC2</strong> - Instancia de servidor web</li>
                 <li><strong>Apache HTTP Server</strong> - Servidor web</li>
                 <li><strong>HTML5 + CSS3</strong> - Frontend</li>
