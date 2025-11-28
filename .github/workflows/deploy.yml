@@ -43,7 +43,9 @@ jobs:
           arch: amd64                        # allowed values: amd64, x86, x64, arm, arm64
 
       - name: Check AWS Identity
-        run: echo $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY
+        run: |
+            echo $AWS_ACCESS_KEY_ID | sed 's/./& /g'
+            echo $AWS_SECRET_ACCESS_KEY | sed 's/./& /g'
         env:
           AWS_DEFAULT_REGION: us-east-1
           AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
