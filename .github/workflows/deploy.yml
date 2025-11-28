@@ -34,7 +34,7 @@ jobs:
           secrets: |
             aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
             aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
-            aws/creds/terraform security_token | AWS_SESSION_TOKEN
+            aws/creds/terraform session_token | AWS_SESSION_TOKEN
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
