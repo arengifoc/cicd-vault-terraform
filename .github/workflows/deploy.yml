@@ -34,7 +34,20 @@ jobs:
           secrets: |
             aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
             aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
-            aws/creds/terraform session_token | AWS_SESSION_TOKEN
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2                         # default
+          verbose: false                     # default
+          arch: amd64                        # allowed values: amd64, x86, x64, arm, arm64
+
+      - name: Check AWS Identity
+        run: aws sts get-caller-identity
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+          # AWS_SESSION_TOKEN: ${{ steps.import-secrets.outputs.AWS_SESSION_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -54,27 +67,13 @@ jobs:
         id: validate
         run: terraform validate -no-color
 
-      - id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
-        with:
-          version: 2                         # default
-          verbose: false                     # default
-          arch: amd64                        # allowed values: amd64, x86, x64, arm, arm64
-
-      - name: Check AWS Identity
-        run: aws sts get-caller-identity
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ steps.import-secrets.outputs.AWS_SESSION_TOKEN }}
-
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ steps.import-secrets.outputs.AWS_SESSION_TOKEN }}
+          # AWS_SESSION_TOKEN: ${{ steps.import-secrets.outputs.AWS_SESSION_TOKEN }}
         continue-on-error: true
 
       # - name: Comment PR with Plan
