@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ steps.import-secrets-plan.outputs.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ steps.import-secrets-plan.outputs.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-# echo "AWS_SESSION_TOKEN=${{ steps.import-secrets-plan.outputs.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${{ steps.import-secrets-plan.outputs.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
 
       - name: Verificar STS get-caller-identity hasta que funcione
         run: |
