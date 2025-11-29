@@ -31,7 +31,7 @@ jobs:
           url: https://vault.angelrengifo.com
           method: jwt
           role: ${{ secrets.VAULT_ROLE }}
-          jwtGithubAudience: vault-gha
+          jwtGithubAudience: ${{ secrets.VAULT_AUDIENCE}}
           secrets: |
             aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
             aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
