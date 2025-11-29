@@ -1,4 +1,3 @@
-# Configuracion de provider AWS
 provider "aws" {
   region = var.aws_region
 
