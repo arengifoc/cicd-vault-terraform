@@ -14,6 +14,9 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  AWS_DEFAULT_REGION: us-east-1
+
 jobs:
   terraform-plan:
     name: Terraform Plan
@@ -23,18 +26,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Import Secrets from Vault
-        id: import-secrets
-        uses: hashicorp/vault-action@v3
-        with:
-          url: https://vault.angelrengifo.com
-          method: jwt
-          role: ${{ secrets.VAULT_ROLE }}
-          jwtGithubAudience: ${{ secrets.VAULT_AUDIENCE }}
-          secrets: |
-            aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
-            aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -46,8 +37,27 @@ jobs:
         run: terraform fmt -check
         continue-on-error: true
 
+      - name: Import Secrets from Vault
+        id: import-secrets-plan
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          jwtGithubAudience: ${{ secrets.VAULT_AUDIENCE }}
+          secrets: |
+            aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
+            aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
+            aws/creds/terraform session_token | AWS_SESSION_TOKEN ;
+
+      - name: Set AWS Environment Variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ steps.import-secrets-plan.outputs.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ steps.import-secrets-plan.outputs.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${{ steps.import-secrets-plan.outputs.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
+
       - name: Terraform Init
-        id: init
+        id: init-plan
         run: terraform init
 
       - name: Terraform Validate
@@ -57,10 +67,6 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false -out=tfplan
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
         continue-on-error: true
 
       - name: Comment PR with Plan
@@ -101,36 +107,39 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Import Secrets from Vault
-        id: import-secrets-apply
-        uses: hashicorp/vault-action@v3
-        with:
-          url: https://vault.angelrengifo.com
-          method: jwt
-          role: ${{ secrets.VAULT_ROLE }}
-          jwtGithubAudience: ${{ secrets.VAULT_AUDIENCE }}
-          secrets: |
-            aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
-            aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.9.0"
 
+      - name: Import Secrets from Vault
+        id: import-secrets-apply
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ vars.VAULT_ADDR }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          jwtGithubAudience: ${{ secrets.VAULT_AUDIENCE }}
+          secrets: |
+            aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
+            aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
+            aws/creds/terraform session_token | AWS_SESSION_TOKEN ;
+
+      - name: Set AWS Environment Variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ steps.import-secrets-apply.outputs.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ steps.import-secrets-apply.outputs.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${{ steps.import-secrets-apply.outputs.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
+
       - name: Terraform Init
-        id: init
+        id: init-apply
         run: terraform init
 
       - name: Terraform Apply
         id: apply
         run: terraform apply -auto-approve -input=false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets-apply.outputs.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets-apply.outputs.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
