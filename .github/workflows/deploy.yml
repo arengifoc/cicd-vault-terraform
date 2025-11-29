@@ -56,6 +56,9 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ steps.import-secrets-plan.outputs.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=${{ steps.import-secrets-plan.outputs.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
 
+      - name: Check AWS credentials
+        run: aws sts get-caller-identity
+
       - name: Terraform Init
         id: init-plan
         env:
