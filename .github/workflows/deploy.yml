@@ -47,12 +47,14 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Init
-        id: init
+        id: init-plan
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.import-secrets-plan.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets-plan.outputs.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
-        run: terraform init
+        run: |
+          env
+          terraform init
 
       - name: Terraform Validate
         id: validate
@@ -128,7 +130,7 @@ jobs:
           terraform_version: "1.9.0"
 
       - name: Terraform Init
-        id: init
+        id: init-apply
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.import-secrets-apply.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets-apply.outputs.AWS_SECRET_ACCESS_KEY }}
