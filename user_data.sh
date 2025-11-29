@@ -75,7 +75,7 @@ cat <<'HTML' > index.html
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Demo HCP Terraform</h1>
+        <h1>🚀 Demo Vault, Terraform y GitHub Actions</h1>
         <h2>Sitio Web Desplegado con Terraform</h2>
         
         <div class="info">
