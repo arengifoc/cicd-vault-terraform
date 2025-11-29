@@ -8,12 +8,4 @@ terraform {
       version = "~> 5.0"
     }
   }
-
-  # Uncomment for HCP Terraform
-  # cloud {
-  #   organization = "your-org-name"
-  #   workspaces {
-  #     name = "wordpress-demo"
-  #   }
-  # }
 }
