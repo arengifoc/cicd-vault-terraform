@@ -5,7 +5,7 @@
 aws_region = "us-east-1"
 
 # Project Configuration
-project_name = "html-demo"
+project_name = "vault-demo"
 
 # Existing Network Resources
 # Replace these with your actual VPC and subnet IDs
