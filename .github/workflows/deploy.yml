@@ -1,4 +1,4 @@
-name: Terraform Plan with Vault
+name: Terraform CI/CD with Vault
 
 on:
   push:
@@ -18,6 +18,7 @@ jobs:
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -55,43 +56,81 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -out=tfplan
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
         continue-on-error: true
 
-      # - name: Comment PR with Plan
-      #   uses: actions/github-script@v7
-      #   if: github.event_name == 'pull_request'
-      #   env:
-      #     PLAN: "${{ steps.plan.outputs.stdout }}"
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-      #       #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-      #       #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-      #       #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+      - name: Comment PR with Plan
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
-      #       <details><summary>Show Plan</summary>
+            <details><summary>Show Plan</summary>
 
-      #       \`\`\`terraform
-      #       ${process.env.PLAN}
-      #       \`\`\`
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
 
-      #       </details>
+            </details>
 
-      #       *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
-      #       github.rest.issues.createComment({
-      #         issue_number: context.issue.number,
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         body: output
-      #       })
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
-      # - name: Terraform Plan Status
-      #   if: steps.plan.outcome == 'failure'
-      #   run: exit 1
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Import Secrets from Vault
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.angelrengifo.com
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          jwtGithubAudience: vault-gha
+          secrets: |
+            aws/creds/terraform access_key | AWS_ACCESS_KEY_ID ;
+            aws/creds/terraform secret_key | AWS_SECRET_ACCESS_KEY ;
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve -input=false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
