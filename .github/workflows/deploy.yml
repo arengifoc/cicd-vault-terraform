@@ -58,9 +58,9 @@ jobs:
 
       - name: Terraform Init
         id: init-plan
-        run: |
-          env
-          terraform init
+        env:
+          TF_LOG: DEBUG
+        run: terraform init
 
       - name: Terraform Validate
         id: validate
